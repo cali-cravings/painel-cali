@@ -569,6 +569,7 @@
   <div class="controls">
     <input type="date" class="filtro-data" id="filtro-data" onchange="aplicarFiltros()">
     <button class="btn-hoje" onclick="filtrarHoje()">Hoje</button>
+    <button class="btn-hoje" style="border-color:rgba(201,169,110,0.3);background:rgba(201,169,110,0.06);color:var(--dourado-claro);" onclick="filtrarSemana()">Esta semana</button>
 
     <button class="filtro-btn ativo" onclick="filtrarStatus('todas', this)">Todas</button>
     <button class="filtro-btn" onclick="filtrarStatus('pendente', this)">Pendentes</button>
@@ -649,6 +650,8 @@ const WHATSAPP = "5547989251991";
 let todasReservas = [];
 let filtroStatus = 'todas';
 let filtroData = '';
+let filtroDataInicio = '';
+let filtroDataFim = '';
 let reservaIdCancelando = null;
 let ultimoCount = null;
 let notifTimer = null;
@@ -737,8 +740,14 @@ function carregarReservas() {
 //  RESUMO DO DIA
 // ══════════════════════
 function atualizarResumo() {
-  const hoje = filtroData || new Date().toISOString().split('T')[0];
-  const doDia = todasReservas.filter(r => r.data === hoje && r.status !== 'cancelado');
+  let doDia;
+  if (filtroData) {
+    doDia = todasReservas.filter(r => r.data === filtroData && r.status !== 'cancelado');
+  } else if (filtroDataInicio && filtroDataFim) {
+    doDia = todasReservas.filter(r => r.data >= filtroDataInicio && r.data <= filtroDataFim && r.status !== 'cancelado');
+  } else {
+    doDia = todasReservas.filter(r => r.status !== 'cancelado');
+  }
   const pendentes = doDia.filter(r => r.status === 'pendente');
   const confirmadas = doDia.filter(r => r.status === 'confirmado');
   const pessoas = doDia.reduce((acc, r) => acc + (parseInt(r.pessoas) || 0), 0);
@@ -755,7 +764,11 @@ function atualizarResumo() {
 function renderLista() {
   let lista = [...todasReservas];
 
-  if (filtroData) lista = lista.filter(r => r.data === filtroData);
+  if (filtroData) {
+    lista = lista.filter(r => r.data === filtroData);
+  } else if (filtroDataInicio && filtroDataFim) {
+    lista = lista.filter(r => r.data >= filtroDataInicio && r.data <= filtroDataFim);
+  }
   if (filtroStatus !== 'todas') lista = lista.filter(r => r.status === filtroStatus);
 
   const el = document.getElementById('reservas-lista');
@@ -871,9 +884,33 @@ function filtrarTodasDatas() {
   renderLista();
 }
 
+function filtrarSemana() {
+  const hoje = new Date();
+  const diaSemana = hoje.getDay(); // 0=dom, 1=seg...
+  const diffSeg = diaSemana === 0 ? -6 : 1 - diaSemana; // segunda
+  const seg = new Date(hoje);
+  seg.setDate(hoje.getDate() + diffSeg);
+  const dom = new Date(seg);
+  dom.setDate(seg.getDate() + 6);
+
+  const fmt = d => d.toISOString().split('T')[0];
+  filtroDataInicio = fmt(seg);
+  filtroDataFim = fmt(dom);
+  filtroData = '';
+  document.getElementById('filtro-data').value = '';
+
+  const fmtBR = d => d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  document.getElementById('resumo-date').textContent =
+    `SEMANA: ${fmtBR(seg)} A ${fmtBR(dom)}`;
+  atualizarResumo();
+  renderLista();
+}
+
 function filtrarHoje() {
   const hoje = new Date().toISOString().split('T')[0];
   filtroData = hoje;
+  filtroDataInicio = '';
+  filtroDataFim = '';
   document.getElementById('filtro-data').value = hoje;
   atualizarResumoDate();
   atualizarResumo();
@@ -882,6 +919,8 @@ function filtrarHoje() {
 
 function aplicarFiltros() {
   filtroData = document.getElementById('filtro-data').value;
+  filtroDataInicio = '';
+  filtroDataFim = '';
   atualizarResumoDate();
   atualizarResumo();
   renderLista();
