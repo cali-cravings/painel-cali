@@ -658,7 +658,7 @@ let filtroData = '';
 let filtroDataInicio = '';
 let filtroDataFim = '';
 let reservaIdCancelando = null;
-let ultimoCount = null;
+let primeirasCarga = true;
 let notifTimer = null;
 
 // ══════════════════════
@@ -717,7 +717,7 @@ function atualizarResumoDate() {
 // ══════════════════════
 function carregarReservas() {
   db.ref('reservas').on('value', snap => {
-    const anterior = todasReservas.length;
+    const anteriorCount = todasReservas.length;
     todasReservas = [];
     snap.forEach(child => {
       todasReservas.push({ id: child.key, ...child.val() });
@@ -728,13 +728,13 @@ function carregarReservas() {
     });
 
     // Notificação sonora de nova reserva
-    if (ultimoCount !== null && todasReservas.length > ultimoCount) {
+    if (!primeirasCarga && todasReservas.length > anteriorCount) {
       const nova = todasReservas[todasReservas.length - 1];
       tocarSom();
       mostrarNotifNova(nova);
       document.getElementById('notif-badge').style.display = 'block';
     }
-    ultimoCount = todasReservas.length;
+    primeirasCarga = false;
 
     atualizarResumo();
     renderLista();
