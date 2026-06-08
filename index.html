@@ -873,6 +873,14 @@ function filtrarStatus(status, btn) {
   filtroStatus = status;
   document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('ativo'));
   btn.classList.add('ativo');
+  if (status === 'pendente') {
+    filtroData = '';
+    filtroDataInicio = '';
+    filtroDataFim = '';
+    document.getElementById('filtro-data').value = '';
+    document.getElementById('resumo-date').textContent = 'TODAS AS DATAS — PENDENTES';
+    atualizarResumo();
+  }
   renderLista();
 }
 
@@ -897,6 +905,9 @@ function filtrarSemana() {
   filtroDataInicio = fmt(seg);
   filtroDataFim = fmt(dom);
   filtroData = '';
+  filtroStatus = 'todas';
+  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('ativo'));
+  document.querySelector('.filtro-btn').classList.add('ativo');
   document.getElementById('filtro-data').value = '';
 
   const fmtBR = d => d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
