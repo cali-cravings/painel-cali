@@ -659,6 +659,7 @@ let filtroDataInicio = '';
 let filtroDataFim = '';
 let reservaIdCancelando = null;
 let primeirasCarga = true;
+let idsConhecidos = new Set();
 let notifTimer = null;
 
 // ══════════════════════
@@ -728,12 +729,15 @@ function carregarReservas() {
     });
 
     // Notificação sonora de nova reserva
-    if (!primeirasCarga && todasReservas.length > anteriorCount) {
-      const nova = todasReservas[todasReservas.length - 1];
-      tocarSom();
-      mostrarNotifNova(nova);
-      document.getElementById('notif-badge').style.display = 'block';
+    if (!primeirasCarga) {
+      const novas = todasReservas.filter(r => !idsConhecidos.has(r.id));
+      if (novas.length > 0) {
+        tocarSom();
+        mostrarNotifNova(novas[novas.length - 1]);
+        document.getElementById('notif-badge').style.display = 'block';
+      }
     }
+    todasReservas.forEach(r => idsConhecidos.add(r.id));
     primeirasCarga = false;
 
     atualizarResumo();
