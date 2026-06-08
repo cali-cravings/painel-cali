@@ -567,6 +567,7 @@
   <div class="controls">
     <input type="date" class="filtro-data" id="filtro-data" onchange="aplicarFiltros()">
     <button class="btn-hoje" onclick="filtrarHoje()">Hoje</button>
+    <button class="btn-hoje" style="border-color:rgba(201,169,110,0.2);background:transparent;color:var(--cinza);" onclick="filtrarTodasDatas()">Todas as datas</button>
     <button class="filtro-btn ativo" onclick="filtrarStatus('todas', this)">Todas</button>
     <button class="filtro-btn" onclick="filtrarStatus('pendente', this)">Pendentes</button>
     <button class="filtro-btn" onclick="filtrarStatus('confirmado', this)">Confirmadas</button>
@@ -810,6 +811,14 @@ function filtrarStatus(status, btn) {
   filtroStatus = status;
   document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('ativo'));
   btn.classList.add('ativo');
+  renderLista();
+}
+
+function filtrarTodasDatas() {
+  filtroData = '';
+  document.getElementById('filtro-data').value = '';
+  document.getElementById('resumo-date').textContent = 'TODAS AS DATAS';
+  atualizarResumo();
   renderLista();
 }
 
