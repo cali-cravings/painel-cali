@@ -392,6 +392,8 @@
   .btn-cancelar:hover { background: rgba(235,135,135,0.1); }
   .btn-wpp { border-color: rgba(37,211,102,0.4); color: #25D366; }
   .btn-wpp:hover { background: rgba(37,211,102,0.1); }
+  .btn-excluir { border-color: rgba(235,135,135,0.3); color: rgba(235,135,135,0.6); }
+  .btn-excluir:hover { background: rgba(235,135,135,0.08); color: var(--vermelho); }
 
   .empty-state {
     text-align: center;
@@ -594,6 +596,23 @@
   </div>
 </div>
 
+<!-- Modal excluir -->
+<div class="modal-overlay" id="modal-excluir">
+  <div class="modal">
+    <h3>Excluir reserva?</h3>
+    <p>Esta ação é permanente e não pode ser desfeita. Digite a senha gerencial para confirmar.</p>
+    <input class="login-input" type="password" id="excluir-senha" maxlength="6" placeholder="••••••"
+      style="width:180px;font-size:1.2rem;margin-bottom:0.5rem;"
+      oninput="document.getElementById('excluir-erro').textContent=''"
+      onkeydown="if(event.key==='Enter') confirmarExclusao()">
+    <div class="login-error" id="excluir-erro" style="margin-bottom:0.8rem;"></div>
+    <div class="modal-btns">
+      <button class="btn-sim" onclick="confirmarExclusao()">Excluir</button>
+      <button class="btn-nao" onclick="fecharModalExcluir()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Notificação nova reserva -->
 <div class="nova-notif" id="nova-notif">
   <button class="nova-notif-close" onclick="fecharNotif()">✕</button>
@@ -773,6 +792,7 @@ function renderLista() {
           ${r.status === 'pendente' ? `<button class="btn-acao btn-confirmar" onclick="confirmarReserva('${r.id}')">✓ Confirmar</button>` : ''}
           ${r.status !== 'cancelado' ? `<button class="btn-acao btn-cancelar" onclick="pedirCancelamento('${r.id}')">✕ Cancelar</button>` : ''}
           <a class="btn-acao btn-wpp" href="https://wa.me/${foneNum}?text=${msg}" target="_blank">WhatsApp</a>
+          <button class="btn-acao btn-excluir" onclick="pedirExclusao('${r.id}')">🗑 Excluir</button>
         </div>
       </div>
     </div>`;
@@ -785,6 +805,35 @@ function renderLista() {
 async function confirmarReserva(id) {
   await db.ref(`reservas/${id}`).update({ status: 'confirmado' });
   showToast('Reserva confirmada!');
+}
+
+let reservaIdExcluindo = null;
+const SENHA_EXCLUSAO = "000813";
+
+function pedirExclusao(id) {
+  reservaIdExcluindo = id;
+  document.getElementById('excluir-senha').value = '';
+  document.getElementById('excluir-erro').textContent = '';
+  document.getElementById('modal-excluir').classList.add('open');
+  setTimeout(() => document.getElementById('excluir-senha').focus(), 100);
+}
+
+async function confirmarExclusao() {
+  const senha = document.getElementById('excluir-senha').value;
+  if (senha !== SENHA_EXCLUSAO) {
+    document.getElementById('excluir-erro').textContent = 'Senha incorreta';
+    document.getElementById('excluir-senha').value = '';
+    return;
+  }
+  await db.ref(`reservas/${reservaIdExcluindo}`).remove();
+  fecharModalExcluir();
+  showToast('Reserva excluída!');
+  reservaIdExcluindo = null;
+}
+
+function fecharModalExcluir() {
+  document.getElementById('modal-excluir').classList.remove('open');
+  reservaIdExcluindo = null;
 }
 
 function pedirCancelamento(id) {
