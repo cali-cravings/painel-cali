@@ -264,6 +264,25 @@
 
   .filtro-data:focus { border-color: var(--dourado); }
 
+  .btn-hoje {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.45rem 0.9rem;
+    border: 1px solid rgba(201,169,110,0.2);
+    background: transparent;
+    color: var(--cinza);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-hoje:hover {
+    border-color: var(--dourado);
+    color: var(--dourado);
+    background: rgba(201,169,110,0.08);
+  }
+
   .filtro-btn {
     font-family: 'DM Mono', monospace;
     font-size: 0.58rem;
@@ -281,20 +300,6 @@
     border-color: var(--dourado);
     color: var(--dourado);
     background: rgba(201,169,110,0.08);
-  }
-
-  .controls-right { margin-left: auto; }
-
-  .btn-hoje {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.58rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 0.45rem 0.9rem;
-    border: 1px solid rgba(201,169,110,0.4);
-    background: rgba(201,169,110,0.1);
-    color: var(--dourado);
-    cursor: pointer;
   }
 
   /* ── Lista de reservas ── */
@@ -569,7 +574,7 @@
   <div class="controls">
     <input type="date" class="filtro-data" id="filtro-data" onchange="aplicarFiltros()">
     <button class="btn-hoje" onclick="filtrarHoje()">Hoje</button>
-    <button class="btn-hoje" style="border-color:rgba(201,169,110,0.3);background:rgba(201,169,110,0.06);color:var(--dourado-claro);" onclick="filtrarSemana()">Esta semana</button>
+    <button class="btn-hoje" onclick="filtrarSemana()">Esta semana</button>
 
     <button class="filtro-btn ativo" onclick="filtrarStatus('todas', this)">Todas</button>
     <button class="filtro-btn" onclick="filtrarStatus('pendente', this)">Pendentes</button>
