@@ -827,6 +827,14 @@ function renderLista() {
 async function confirmarReserva(id) {
   await db.ref(`reservas/${id}`).update({ status: 'confirmado' });
   showToast('Reserva confirmada!');
+  const r = todasReservas.find(r => r.id === id);
+  if (r) {
+    const dataFmt = formatarData(r.data);
+    const msg = encodeURIComponent(
+      `Olá ${r.nome}! 🎉 Sua reserva no Cali Cravings foi *confirmada*!\n\n📅 Data: ${dataFmt}\n🕐 Horário: ${r.horario}\n👥 Pessoas: ${r.pessoas}\n\nEstamos te esperando! 🍽️`
+    );
+    window.open(`https://wa.me/${limparFone(r.telefone)}?text=${msg}`, '_blank');
+  }
 }
 
 let reservaIdExcluindo = null;
@@ -865,9 +873,17 @@ function pedirCancelamento(id) {
 
 async function confirmarCancelamento() {
   if (!reservaIdCancelando) return;
+  const r = todasReservas.find(r => r.id === reservaIdCancelando);
   await db.ref(`reservas/${reservaIdCancelando}`).update({ status: 'cancelado' });
   fecharModal();
   showToast('Reserva cancelada');
+  if (r) {
+    const dataFmt = formatarData(r.data);
+    const msg = encodeURIComponent(
+      `Olá ${r.nome}, informamos que sua reserva no Cali Cravings para o dia ${dataFmt} às ${r.horario} foi *cancelada*.\n\nPedimos desculpas pelo inconveniente. Para reagendar, acesse nosso link de reservas. 🙏`
+    );
+    window.open(`https://wa.me/${limparFone(r.telefone)}?text=${msg}`, '_blank');
+  }
   reservaIdCancelando = null;
 }
 
