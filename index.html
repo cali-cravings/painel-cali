@@ -794,7 +794,7 @@ function renderLista() {
     const dataFmt = formatarData(r.data);
     const foneNum = limparFone(r.telefone);
     const msg = encodeURIComponent(
-      `Olá ${r.nome}! Sua reserva no Cali Cravings para ${dataFmt} às ${r.horario} (${r.pessoas} pessoa${r.pessoas > 1 ? 's' : ''}) foi confirmada. Até lá! 🍽️`
+      `Olá ${r.nome}! ✅ Sua reserva no Cali Cravings foi *confirmada*!\n\n▪ Data: ${dataFmt}\n▪ Horário: ${r.horario}\n▪ Pessoas: ${r.pessoas}\n▪ Ambiente: ${r.ambiente || 'A definir'}\n\nEstamos te esperando!`
     );
     return `
     <div class="reserva-card" id="card-${r.id}">
