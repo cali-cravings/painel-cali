@@ -794,7 +794,7 @@ function renderLista() {
     const dataFmt = formatarData(r.data);
     const foneNum = limparFone(r.telefone);
     const msg = encodeURIComponent(
-      `Olá ${r.nome}! ✅ Sua reserva no Cali Cravings foi *confirmada*!\n\n▪ Data: ${dataFmt}\n▪ Horário: ${r.horario}\n▪ Pessoas: ${r.pessoas}\n▪ Ambiente: ${r.ambiente || 'A definir'}\n\nEstamos te esperando!`
+      `Olá ${r.nome}! Sua reserva no Cali Cravings foi *confirmada*! ✅\n\nData: ${dataFmt}\nHorario: ${r.horario}\nPessoas: ${r.pessoas}\nAmbiente: ${r.ambiente || 'A definir'}\n\nEstamos te esperando!\n\n_Entendemos que imprevistos podem ocorrer, a tolerância de espera em sua reserva é de 15min. Em casos de cancelamento ou desistência, por gentileza comunicar através desse canal._`
     );
     return `
     <div class="reserva-card" id="card-${r.id}">
@@ -832,7 +832,7 @@ async function confirmarReserva(id) {
   if (r) {
     const dataFmt = formatarData(r.data);
     const msg = encodeURIComponent(
-      `Olá ${r.nome}! ✅ Sua reserva no Cali Cravings foi *confirmada*!\n\n▪ Data: ${dataFmt}\n▪ Horário: ${r.horario}\n▪ Pessoas: ${r.pessoas}\n▪ Ambiente: ${r.ambiente || 'A definir'}\n\nEstamos te esperando! 🍽`
+      `Olá ${r.nome}! Sua reserva no Cali Cravings foi *confirmada*! ✅\n\nData: ${dataFmt}\nHorario: ${r.horario}\nPessoas: ${r.pessoas}\nAmbiente: ${r.ambiente || 'A definir'}\n\nEstamos te esperando!\n\n_Entendemos que imprevistos podem ocorrer, a tolerância de espera em sua reserva é de 15min. Em casos de cancelamento ou desistência, por gentileza comunicar através desse canal._`
     );
     window.open(`https://wa.me/${limparFone(r.telefone)}?text=${msg}`, '_blank');
   }
