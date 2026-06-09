@@ -805,6 +805,7 @@ function renderLista() {
           <span>🕐 ${r.horario}</span>
           <span>👥 ${r.pessoas} pessoa${r.pessoas > 1 ? 's' : ''}</span>
           <span>📞 ${r.telefone}</span>
+          ${r.ambiente ? `<span>🏠 ${r.ambiente}</span>` : ''}
         </div>
         ${r.obs ? `<div class="reserva-obs">📝 ${r.obs}</div>` : ''}
       </div>
@@ -831,7 +832,7 @@ async function confirmarReserva(id) {
   if (r) {
     const dataFmt = formatarData(r.data);
     const msg = encodeURIComponent(
-      `Olá ${r.nome}! 🎉 Sua reserva no Cali Cravings foi *confirmada*!\n\n📅 Data: ${dataFmt}\n🕐 Horário: ${r.horario}\n👥 Pessoas: ${r.pessoas}\n\nEstamos te esperando! 🍽️`
+      `Olá ${r.nome}! 🎉 Sua reserva no Cali Cravings foi *confirmada*!\n\n📅 Data: ${dataFmt}\n🕐 Horário: ${r.horario}\n👥 Pessoas: ${r.pessoas}\n🏠 Ambiente: ${r.ambiente || 'A definir'}\n\nEstamos te esperando! 🍽️`
     );
     window.open(`https://wa.me/${limparFone(r.telefone)}?text=${msg}`, '_blank');
   }
