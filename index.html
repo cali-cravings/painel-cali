@@ -413,6 +413,9 @@
   .btn-excluir:hover { background: rgba(235,135,135,0.08); color: var(--vermelho); }
   .btn-editar { border-color: rgba(126,184,212,0.4); color: var(--azul); }
   .btn-editar:hover { background: rgba(126,184,212,0.1); }
+  .btn-sentar { border-color: rgba(201,169,110,0.6); color: var(--dourado); font-weight: 600; }
+  .btn-sentar:hover { background: rgba(201,169,110,0.15); }
+  .badge-sentado { background: rgba(201,169,110,0.15); color: var(--dourado); border: 1px solid rgba(201,169,110,0.4); }
 
   .empty-state {
     text-align: center;
@@ -627,13 +630,18 @@
       </select>
     </div>
 
-    <div style="text-align:left;margin-bottom:1.2rem;">
+    <div style="text-align:left;margin-bottom:0.7rem;">
       <label style="font-size:0.58rem;letter-spacing:0.2em;color:var(--dourado);display:block;margin-bottom:0.3rem;">NÚMERO DE PESSOAS</label>
       <select id="edit-pessoas" style="width:100%;background:#1e2e27;border:1px solid rgba(201,169,110,0.25);color:var(--areia);font-family:'DM Mono',monospace;font-size:0.85rem;padding:0.7rem 0.9rem;outline:none;">
         <option>1</option><option>2</option><option>3</option><option>4</option>
         <option>5</option><option>6</option><option>7</option><option>8</option>
         <option>9</option><option>10</option><option>11</option><option>12+</option>
       </select>
+    </div>
+
+    <div style="text-align:left;margin-bottom:1.2rem;">
+      <label style="font-size:0.58rem;letter-spacing:0.2em;color:var(--dourado);display:block;margin-bottom:0.3rem;">MESA</label>
+      <input id="edit-mesa" type="text" placeholder="Ex: 12" style="width:100%;background:rgba(245,240,232,0.06);border:1px solid rgba(201,169,110,0.25);color:var(--areia);font-family:'DM Mono',monospace;font-size:0.85rem;padding:0.7rem 0.9rem;outline:none;">
     </div>
 
     <div class="modal-btns">
@@ -857,6 +865,7 @@ function renderLista() {
           <span>👥 ${r.pessoas} pessoa${r.pessoas > 1 ? 's' : ''}</span>
           <span>📞 ${r.telefone}</span>
           ${r.ambiente ? `<span>🏠 ${r.ambiente}</span>` : ''}
+          ${r.mesa ? `<span>🪑 Mesa ${r.mesa}</span>` : ''}
         </div>
         ${r.obs ? `<div class="reserva-obs">📝 ${r.obs}</div>` : ''}
       </div>
@@ -866,6 +875,11 @@ function renderLista() {
           ${r.status === 'pendente' ? `<button class="btn-acao btn-confirmar" onclick="confirmarReserva('${r.id}')">✓ Confirmar</button>` : ''}
           ${r.status !== 'cancelado' ? `<button class="btn-acao btn-cancelar" onclick="pedirCancelamento('${r.id}')">✕ Cancelar</button>` : ''}
           <button class="btn-acao btn-editar" onclick="abrirEdicao('${r.id}')">✎ Editar</button>
+          ${r.status === 'confirmado' && r.data === new Date().toISOString().split('T')[0]
+            ? (r.sentado
+              ? `<span class="badge badge-sentado">✓ Sentado</span>`
+              : `<button class="btn-acao btn-sentar" onclick="marcarSentado('${r.id}')">⬛ Sentar</button>`)
+            : ''}
           <a class="btn-acao btn-wpp" href="https://wa.me/${foneNum}?text=${msg}" target="_blank">WhatsApp</a>
           <button class="btn-acao btn-excluir" onclick="pedirExclusao('${r.id}')">🗑 Excluir</button>
         </div>
@@ -890,6 +904,11 @@ async function confirmarReserva(id) {
   }
 }
 
+async function marcarSentado(id) {
+  await db.ref(`reservas/${id}`).update({ sentado: true });
+  showToast('Cliente acomodado!');
+}
+
 let reservaIdEditando = null;
 
 function abrirEdicao(id) {
@@ -899,6 +918,7 @@ function abrirEdicao(id) {
   document.getElementById('edit-nome').value = r.nome || '';
   document.getElementById('edit-horario').value = r.horario || '12:00';
   document.getElementById('edit-pessoas').value = r.pessoas || '2';
+  document.getElementById('edit-mesa').value = r.mesa || '';
   document.getElementById('modal-editar').classList.add('open');
 }
 
@@ -907,8 +927,9 @@ async function salvarEdicao() {
   const nome = document.getElementById('edit-nome').value.trim();
   const horario = document.getElementById('edit-horario').value;
   const pessoas = document.getElementById('edit-pessoas').value;
+  const mesa = document.getElementById('edit-mesa').value.trim();
   if (!nome) { showToast('Digite o nome'); return; }
-  await db.ref(`reservas/${reservaIdEditando}`).update({ nome, horario, pessoas });
+  await db.ref(`reservas/${reservaIdEditando}`).update({ nome, horario, pessoas, mesa });
   fecharEdicao();
   showToast('Reserva atualizada!');
   reservaIdEditando = null;
