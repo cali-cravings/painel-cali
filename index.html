@@ -607,6 +607,23 @@
 
 </div>
 
+<!-- Modal desfazer sentado -->
+<div class="modal-overlay" id="modal-desfazer-sentado">
+  <div class="modal">
+    <h3>Desfazer "Sentado"?</h3>
+    <p>Digite a senha gerencial para reverter o status.</p>
+    <input class="login-input" type="password" id="desfazer-senha" maxlength="6" placeholder="••••••"
+      style="width:180px;font-size:1.2rem;margin-bottom:0.5rem;"
+      oninput="document.getElementById('desfazer-erro').textContent=''"
+      onkeydown="if(event.key==='Enter') confirmarDesfazerSentado()">
+    <div class="login-error" id="desfazer-erro" style="margin-bottom:0.8rem;"></div>
+    <div class="modal-btns">
+      <button class="btn-sim" onclick="confirmarDesfazerSentado()">Confirmar</button>
+      <button class="btn-nao" onclick="fecharDesfazerSentado()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal editar -->
 <div class="modal-overlay" id="modal-editar">
   <div class="modal" style="max-width:460px;">
@@ -878,7 +895,7 @@ function renderLista() {
           <button class="btn-acao btn-editar" onclick="abrirEdicao('${r.id}')">✎ Editar</button>
           ${r.status === 'confirmado' && r.data === hoje
             ? (r.sentado
-              ? `<span class="badge badge-sentado">✓ Sentado</span>`
+              ? `<button class="btn-acao btn-sentar" style="opacity:0.7;" onclick="desfazerSentado('${r.id}')">✓ Sentado</button>`
               : `<button class="btn-acao btn-sentar" onclick="marcarSentado('${r.id}')">⬛ Sentar</button>`)
             : ''}
           <a class="btn-acao btn-wpp" href="https://wa.me/${foneNum}?text=${msg}" target="_blank">WhatsApp</a>
@@ -903,6 +920,34 @@ async function confirmarReserva(id) {
     );
     window.open(`https://wa.me/${limparFone(r.telefone)}?text=${msg}`, '_blank');
   }
+}
+
+let reservaIdDesfazendo = null;
+
+function desfazerSentado(id) {
+  reservaIdDesfazendo = id;
+  document.getElementById('desfazer-senha').value = '';
+  document.getElementById('desfazer-erro').textContent = '';
+  document.getElementById('modal-desfazer-sentado').classList.add('open');
+  setTimeout(() => document.getElementById('desfazer-senha').focus(), 100);
+}
+
+async function confirmarDesfazerSentado() {
+  const senha = document.getElementById('desfazer-senha').value;
+  if (senha !== SENHA_EXCLUSAO) {
+    document.getElementById('desfazer-erro').textContent = 'Senha incorreta';
+    document.getElementById('desfazer-senha').value = '';
+    return;
+  }
+  await db.ref(`reservas/${reservaIdDesfazendo}`).update({ sentado: false });
+  fecharDesfazerSentado();
+  showToast('Status revertido!');
+  reservaIdDesfazendo = null;
+}
+
+function fecharDesfazerSentado() {
+  document.getElementById('modal-desfazer-sentado').classList.remove('open');
+  reservaIdDesfazendo = null;
 }
 
 async function marcarSentado(id) {
