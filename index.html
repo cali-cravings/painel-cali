@@ -1051,7 +1051,10 @@ function filtrarHoje() {
   filtroData = hoje;
   filtroDataInicio = '';
   filtroDataFim = '';
+  filtroStatus = 'todas';
   document.getElementById('filtro-data').value = hoje;
+  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('ativo'));
+  document.querySelector('.filtro-btn').classList.add('ativo');
   atualizarResumoDate();
   atualizarResumo();
   renderLista();
