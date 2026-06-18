@@ -758,7 +758,7 @@ function sair() {
 //  INIT APP
 // ══════════════════════
 function iniciarApp() {
-  const hoje = new Date().toISOString().split('T')[0];
+  const hoje = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
   filtroData = hoje;
   document.getElementById('filtro-data').value = hoje;
   atualizarResumoDate();
@@ -830,7 +830,7 @@ function atualizarResumo() {
 //  RENDER LISTA
 // ══════════════════════
 function renderLista() {
-  const hoje = new Date().toISOString().split('T')[0];
+  const hoje = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
   let lista = [...todasReservas];
 
   if (filtroData) {
@@ -1030,7 +1030,7 @@ function filtrarSemana() {
   const dom = new Date(seg);
   dom.setDate(seg.getDate() + 6);
 
-  const fmt = d => d.toISOString().split('T')[0];
+  const fmt = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
   filtroDataInicio = fmt(seg);
   filtroDataFim = fmt(dom);
   filtroData = '';
@@ -1047,7 +1047,7 @@ function filtrarSemana() {
 }
 
 function filtrarHoje() {
-  const hoje = new Date().toISOString().split('T')[0];
+  const hoje = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
   filtroData = hoje;
   filtroDataInicio = '';
   filtroDataFim = '';
