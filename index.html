@@ -830,6 +830,7 @@ function atualizarResumo() {
 //  RENDER LISTA
 // ══════════════════════
 function renderLista() {
+  const hoje = new Date().toISOString().split('T')[0];
   let lista = [...todasReservas];
 
   if (filtroData) {
@@ -875,7 +876,7 @@ function renderLista() {
           ${r.status === 'pendente' ? `<button class="btn-acao btn-confirmar" onclick="confirmarReserva('${r.id}')">✓ Confirmar</button>` : ''}
           ${r.status !== 'cancelado' ? `<button class="btn-acao btn-cancelar" onclick="pedirCancelamento('${r.id}')">✕ Cancelar</button>` : ''}
           <button class="btn-acao btn-editar" onclick="abrirEdicao('${r.id}')">✎ Editar</button>
-          ${r.status === 'confirmado' && r.data === new Date().toISOString().split('T')[0]
+          ${r.status === 'confirmado' && r.data === hoje
             ? (r.sentado
               ? `<span class="badge badge-sentado">✓ Sentado</span>`
               : `<button class="btn-acao btn-sentar" onclick="marcarSentado('${r.id}')">⬛ Sentar</button>`)
