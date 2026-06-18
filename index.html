@@ -670,7 +670,12 @@
 <div class="modal-overlay" id="modal-cancelar">
   <div class="modal">
     <h3>Cancelar reserva?</h3>
-    <p>Esta ação irá marcar a reserva como cancelada. Você pode avisar o cliente pelo WhatsApp.</p>
+    <p>Digite a senha gerencial para confirmar o cancelamento.</p>
+    <input class="login-input" type="password" id="cancelar-senha" maxlength="6" placeholder="••••••"
+      style="width:180px;font-size:1.2rem;margin-bottom:0.5rem;"
+      oninput="document.getElementById('cancelar-erro').textContent=''"
+      onkeydown="if(event.key==='Enter') confirmarCancelamento()">
+    <div class="login-error" id="cancelar-erro" style="margin-bottom:0.8rem;"></div>
     <div class="modal-btns">
       <button class="btn-sim" onclick="confirmarCancelamento()">Cancelar reserva</button>
       <button class="btn-nao" onclick="fecharModal()">Voltar</button>
@@ -891,7 +896,7 @@ function renderLista() {
         <span class="badge badge-${r.status}">${r.status}</span>
         <div class="action-btns">
           ${r.status === 'pendente' ? `<button class="btn-acao btn-confirmar" onclick="confirmarReserva('${r.id}')">✓ Confirmar</button>` : ''}
-          ${r.status !== 'cancelado' ? `<button class="btn-acao btn-cancelar" onclick="pedirCancelamento('${r.id}')">✕ Cancelar</button>` : ''}
+          ${r.status !== 'cancelado' ? `<button class="btn-acao btn-cancelar" onclick="pedirCancelamento('${r.id}')">✕ Cancelar</button>` : `<button class="btn-acao btn-confirmar" onclick="reativarReserva('${r.id}')">↩ Reativar</button>`}
           <button class="btn-acao btn-editar" onclick="abrirEdicao('${r.id}')">✎ Editar</button>
           ${r.status === 'confirmado' && r.data === hoje
             ? (r.sentado
@@ -1017,11 +1022,20 @@ function fecharModalExcluir() {
 
 function pedirCancelamento(id) {
   reservaIdCancelando = id;
+  document.getElementById('cancelar-senha').value = '';
+  document.getElementById('cancelar-erro').textContent = '';
   document.getElementById('modal-cancelar').classList.add('open');
+  setTimeout(() => document.getElementById('cancelar-senha').focus(), 100);
 }
 
 async function confirmarCancelamento() {
   if (!reservaIdCancelando) return;
+  const senha = document.getElementById('cancelar-senha').value;
+  if (senha !== SENHA_EXCLUSAO) {
+    document.getElementById('cancelar-erro').textContent = 'Senha incorreta';
+    document.getElementById('cancelar-senha').value = '';
+    return;
+  }
   const r = todasReservas.find(r => r.id === reservaIdCancelando);
   await db.ref(`reservas/${reservaIdCancelando}`).update({ status: 'cancelado' });
   fecharModal();
@@ -1038,6 +1052,14 @@ async function confirmarCancelamento() {
 
 function fecharModal() {
   document.getElementById('modal-cancelar').classList.remove('open');
+  document.getElementById('cancelar-senha').value = '';
+  document.getElementById('cancelar-erro').textContent = '';
+  reservaIdCancelando = null;
+}
+
+async function reativarReserva(id) {
+  await db.ref(`reservas/${id}`).update({ status: 'pendente' });
+  showToast('Reserva reativada!');
 }
 
 // ══════════════════════
