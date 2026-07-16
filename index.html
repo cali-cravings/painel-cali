@@ -591,6 +591,7 @@
   <div class="controls">
     <input type="date" class="filtro-data" id="filtro-data" onchange="aplicarFiltros()">
     <button class="btn-hoje" onclick="filtrarHoje()">Hoje</button>
+    <button class="btn-hoje" style="border-color:rgba(201,169,110,0.4);color:var(--dourado);" onclick="abrirExportar()">⬇ Exportar</button>
     <button class="btn-hoje" onclick="filtrarSemana()">Esta semana</button>
 
     <button class="filtro-btn ativo" onclick="filtrarStatus('todas', this)">Todas</button>
@@ -605,6 +606,37 @@
     <div class="reservas-lista" id="reservas-lista"></div>
   </div>
 
+</div>
+
+<!-- Modal exportar -->
+<div class="modal-overlay" id="modal-exportar">
+  <div class="modal">
+    <h3>Exportar reservas</h3>
+    <p>Digite a senha gerencial para baixar a lista de contatos.</p>
+    <input class="login-input" type="password" id="exportar-senha" maxlength="6" placeholder="••••••"
+      style="width:180px;font-size:1.2rem;margin-bottom:0.5rem;"
+      oninput="document.getElementById('exportar-erro').textContent=''"
+      onkeydown="if(event.key==='Enter') confirmarExportar()">
+    <div class="login-error" id="exportar-erro" style="margin-bottom:0.8rem;"></div>
+    <div style="text-align:left;margin:0.8rem 0 1rem;font-size:0.65rem;color:var(--cinza);letter-spacing:0.1em;">
+      EXPORTAR:
+      <div style="display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap;">
+        <label style="display:flex;align-items:center;gap:0.3rem;cursor:pointer;">
+          <input type="radio" name="export-tipo" value="hoje" checked> Reservas de hoje
+        </label>
+        <label style="display:flex;align-items:center;gap:0.3rem;cursor:pointer;">
+          <input type="radio" name="export-tipo" value="semana"> Esta semana
+        </label>
+        <label style="display:flex;align-items:center;gap:0.3rem;cursor:pointer;">
+          <input type="radio" name="export-tipo" value="todas"> Todas
+        </label>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-sim" style="background:var(--dourado);color:var(--verde);" onclick="confirmarExportar()">Baixar CSV</button>
+      <button class="btn-nao" onclick="fecharExportar()">Cancelar</button>
+    </div>
+  </div>
 </div>
 
 <!-- Modal desfazer sentado -->
@@ -925,6 +957,62 @@ async function confirmarReserva(id) {
     );
     window.open(`https://wa.me/${limparFone(r.telefone)}?text=${msg}`, '_blank');
   }
+}
+
+function abrirExportar() {
+  document.getElementById('exportar-senha').value = '';
+  document.getElementById('exportar-erro').textContent = '';
+  document.getElementById('modal-exportar').classList.add('open');
+  setTimeout(() => document.getElementById('exportar-senha').focus(), 100);
+}
+
+function fecharExportar() {
+  document.getElementById('modal-exportar').classList.remove('open');
+}
+
+function confirmarExportar() {
+  const senha = document.getElementById('exportar-senha').value;
+  if (senha !== SENHA_EXCLUSAO) {
+    document.getElementById('exportar-erro').textContent = 'Senha incorreta';
+    document.getElementById('exportar-senha').value = '';
+    return;
+  }
+
+  const tipo = document.querySelector('input[name="export-tipo"]:checked').value;
+  const hoje = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
+
+  let lista = [...todasReservas];
+  if (tipo === 'hoje') {
+    lista = lista.filter(r => r.data === hoje);
+  } else if (tipo === 'semana') {
+    const diaSemana = new Date().getDay();
+    const diffSeg = diaSemana === 0 ? -6 : 1 - diaSemana;
+    const seg = new Date(); seg.setDate(new Date().getDate() + diffSeg);
+    const dom = new Date(seg); dom.setDate(seg.getDate() + 6);
+    const fmt = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    lista = lista.filter(r => r.data >= fmt(seg) && r.data <= fmt(dom));
+  }
+
+  if (!lista.length) {
+    document.getElementById('exportar-erro').textContent = 'Nenhuma reserva encontrada';
+    return;
+  }
+
+  // Gerar CSV
+  const header = 'Nome,Telefone,Data,Horario,Pessoas,Ambiente,Mesa,Status,Sentado';
+  const rows = lista.map(r =>
+    `"${r.nome || ''}","${r.telefone || ''}","${formatarData(r.data)}","${r.horario || ''}","${r.pessoas || ''}","${r.ambiente || ''}","${r.mesa || ''}","${r.status || ''}","${r.sentado ? 'Sim' : 'Nao'}"`
+  );
+  const csv = [header, ...rows].join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `reservas-cali-${tipo}-${hoje}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  fecharExportar();
+  showToast('CSV exportado!');
 }
 
 let reservaIdDesfazendo = null;
